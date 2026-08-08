@@ -451,7 +451,7 @@ $displayedPlaces = array_slice($filteredPlaces, $startIndex, $limit);
                 'Pantai Kelingking',
                 'Pura Ulun Danu Beratan Bedugul',
                 'Pantai Jimbaran',
-                'HIDDEN WATERFALL SEKUMPUL',
+                'Gitgit Waterfall',
                 'Pantai Pandawa',
                 'Uluwatu Temple',
                 'Garuda Wisnu Kencana Cultural Park',
