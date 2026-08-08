@@ -474,33 +474,47 @@ if (!function_exists('getPythonBinary')) {
     }
 }
 
+// ==========================================================
+// FUNGSI PEMANGGIL SCRIPT PYTHON REKOMENDASI (CONTENT-BASED FILTERING)
+// ==========================================================
 if (!function_exists('getRecommendationsFromPython')) {
-    function getRecommendationsFromPython($action, $params)
+    function getRecommendationsFromPython($action, $params = [])
     {
+        $pythonBin = getPythonBinary(); // Mengambil /var/www/balirecom/env/bin/python3
         $scriptPath = __DIR__ . '/recommend.py';
+
+        // Pastikan script Python ada
         if (!file_exists($scriptPath)) {
             return null;
         }
 
-        $pythonBin = getPythonBinary();
-        $cmd = escapeshellcmd($pythonBin) . ' -X utf8 ' . escapeshellarg($scriptPath) . ' --action ' . escapeshellarg($action);
+        // Susun Argumen CLI
+        $cmd = escapeshellarg($pythonBin) . ' ' . escapeshellarg($scriptPath) . ' --action ' . escapeshellarg($action);
+
         if ($action === 'recommend') {
-            $cmd .= ' --query ' . escapeshellarg($params['query'] ?? '');
-        } else if ($action === 'similar') {
-            $cmd .= ' --similar_to ' . escapeshellarg($params['similar_to'] ?? '');
+            $query = $params['query'] ?? '';
+            $cmd .= ' --query ' . escapeshellarg($query);
+        } elseif ($action === 'similar') {
+            $similarTo = $params['similar_to'] ?? '';
+            $cmd .= ' --similar_to ' . escapeshellarg($similarTo);
         }
 
-        $output = [];
-        $retval = 1;
-        @exec($cmd, $output, $retval);
+        // Jalankan perintah CLI Python dan tangkap STDERR jika ada error
+        $cmd .= ' 2>&1';
+        $output = shell_exec($cmd);
 
-        if ($retval === 0 && !empty($output)) {
-            $jsonResult = implode("\n", $output);
-            $decoded = json_decode($jsonResult, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                return $decoded;
-            }
+        if (!$output) {
+            return null;
         }
+
+        // Decode JSON dari Python
+        $data = json_decode($output, true);
+
+        // Validasi jika JSON valid
+        if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+            return $data;
+        }
+
         return null;
     }
 }
