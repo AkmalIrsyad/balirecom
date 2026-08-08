@@ -436,15 +436,23 @@ if (!function_exists('getPythonBinary')) {
             return $cachedBin;
 
         $candidates = [
-            'python3',
-            'python',
+            // 1. Path Python di Virtual Environment VPS (Prioritas Utama)
+            '/var/www/balirecom/env/bin/python3',
+
+            // 2. Candidate sistem Linux/VPS standar
+            '/usr/bin/python3',
+            '/usr/local/bin/python3',
+
+            // 3. Candidate Windows / Laragon (untuk kebutuhan Local Development)
             'C:\\laragon\\bin\\python\\python-3.10\\python.exe',
             'C:\\Python312\\python.exe',
             'C:\\Python311\\python.exe',
             'C:\\Python310\\python.exe',
             'C:\\Python39\\python.exe',
-            '/usr/bin/python3',
-            '/usr/local/bin/python3'
+
+            // 4. Fallback global CLI command
+            'python3',
+            'python'
         ];
 
         foreach ($candidates as $c) {
