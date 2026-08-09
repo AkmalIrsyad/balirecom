@@ -206,14 +206,6 @@ if ($isWizardActive) {
                 <span>BaliRecom</span>
             </a>
 
-            <!-- Navbar Search Form (TripAdvisor style) -->
-            <form action="index.php#destinasi" method="GET" class="nav-search-form">
-                <input type="hidden" name="action" value="filter">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" name="q" placeholder="<?php echo __('search_placeholder'); ?>" id="searchInput" autocomplete="off">
-                <div id="searchSuggestions" class="search-suggestions-dropdown" style="display: none;"></div>
-            </form>
-
             <div class="nav-links">
                 <a href="index.php"><?php echo __('nav_home'); ?></a>
                 <a href="destinasi.php"><?php echo __('nav_destinations'); ?></a>

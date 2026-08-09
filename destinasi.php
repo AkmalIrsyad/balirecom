@@ -91,8 +91,11 @@ if ($action === 'similar' && !empty($similar_to)) {
     }
     // Filter dataset
     $filteredPlaces = array_filter($wisataData, function ($place) use ($q, $category, $location, $rating) {
-        // 1. Text Search Filter (q)
+        // 1. Text Search Filter (q) with smart token & stopword parsing
         if (!empty($q)) {
+            $normalizedQ = strtolower(trim($q));
+            $words = preg_split('/\s+/', $normalizedQ, -1, PREG_SPLIT_NO_EMPTY);
+
             $searchableText = strtolower(
                 ($place['Nama Wisata'] ?? '') . ' ' .
                     ($place['Kategori Wisata'] ?? '') . ' ' .
@@ -100,7 +103,21 @@ if ($action === 'similar' && !empty($similar_to)) {
                     ($place['Deskripsi'] ?? '') . ' ' .
                     ($place['preferensi'] ?? '')
             );
-            if (strpos($searchableText, strtolower($q)) === false) {
+
+            $matchAll = true;
+            $meaningfulWordCount = 0;
+            foreach ($words as $word) {
+                // Ignore short stopwords if query has multiple words
+                if (count($words) > 1 && in_array($word, ['di', 'ke', 'dari', 'yang', 'yg', 'dan', 'pada', 'ada', 'itu', 'ini', 'wisata'])) {
+                    continue;
+                }
+                $meaningfulWordCount++;
+                if (strpos($searchableText, $word) === false) {
+                    $matchAll = false;
+                    break;
+                }
+            }
+            if ($meaningfulWordCount > 0 && !$matchAll) {
                 return false;
             }
         }
@@ -139,6 +156,17 @@ if ($sort === 'rating') {
 } else if ($sort === 'nama') {
     usort($filteredPlaces, function ($a, $b) {
         return strcasecmp($a['Nama Wisata'] ?? '', $b['Nama Wisata'] ?? '');
+    });
+} else if (!empty($q)) {
+    // Relevancy sort for search queries
+    usort($filteredPlaces, function ($a, $b) use ($q) {
+        $qLower = strtolower($q);
+        $aNameMatch = (strpos(strtolower($a['Nama Wisata'] ?? ''), $qLower) !== false) ? 2 : 0;
+        $bNameMatch = (strpos(strtolower($b['Nama Wisata'] ?? ''), $qLower) !== false) ? 2 : 0;
+        if ($aNameMatch !== $bNameMatch) {
+            return $bNameMatch <=> $aNameMatch;
+        }
+        return ($b['rating'] ?? 0) <=> ($a['rating'] ?? 0);
     });
 }
 
