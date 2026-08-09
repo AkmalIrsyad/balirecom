@@ -1,0 +1,27 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Mencegah orang melihat daftar file dalam direktori (Keamanan)
+    Options -Indexes
+
+    # Hapus trailing slash di akhir URL (misal: /destinasi/ menjadi /destinasi)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)/$ /$1 [L,R=301]
+
+    # Menghilangkan ekstensi .php dari URL (agar lebih rapi, misal: /destinasi jadi /destinasi.php di belakang layar)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+# (Opsional) Mengamankan file Python agar tidak bisa diakses langsung via browser
+<FilesMatch "\.py$">
+    Require all denied
+</FilesMatch>
+
+# Menonaktifkan Cache (Sangat berguna saat masa pengembangan/development)
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "-1"
+</IfModule>
